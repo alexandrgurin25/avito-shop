@@ -8,5 +8,8 @@ import (
 func Handle(w http.ResponseWriter, r *http.Request) {
 	var in BuyIn
 	in.Item = chi.URLParam(r, "item")
+
+	//Нужно создать базу данных с вещами пользователя
+	//
 	
 }

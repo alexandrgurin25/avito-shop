@@ -1,8 +1,10 @@
 package auth_handler
 
 import (
+	"avito-shop/internal/common"
 	"avito-shop/internal/service/auth_service"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -32,6 +34,11 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	AuthDtoOut, err := h.service.Auth(ctx, in.Username, in.Password)
+
+	if AuthDtoOut == nil && errors.Is(err, common.ErrIncorrectPassword) {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -3,10 +3,12 @@ package database
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type ConnConfig struct {
@@ -34,14 +36,14 @@ func New(connConfig ConnConfig) (*pgx.Conn, error) {
 	}
 	log.Printf("Postgres connected successful")
 
-	defer conn.Close(context.Background()) // Возможно нужно убрать
 	return conn, nil
 }
 
 type DataBase interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	//ExecContext(ctx context.Context, query string, args ...any) error
+	Begin(ctx context.Context) (pgx.Tx, error)
+	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
 }
 
 func WithConn() ConnConfig {

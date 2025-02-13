@@ -3,19 +3,20 @@ package middlewares
 import (
 	"avito-shop/internal/common"
 	"context"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
 type tokenData struct {
-	jwt.RegisteredClaims        // техническое поле для пирсинга
-	UserId               string `json:"sub"`
-	CreatedAt            int64  `json:"iat"`
+	jwt.RegisteredClaims       // техническое поле для пирсинга
+	UserId               int   `json:"id"`
+	CreatedAt            int64 `json:"iat"`
 }
 
 func init() {
@@ -49,16 +50,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		if data, ok := token.Claims.(*tokenData); ok && token.Valid {
-			expirationTime := time.Now().Add(common.ExpirationTime).Unix()
-			if data.CreatedAt > expirationTime {
+			createdAt := time.Unix(data.CreatedAt, 0)
+			expirationTime := createdAt.Add(common.ExpirationTime) // Добавляем время
+			timeNow := time.Now()
+
+			// Проверяем, истек ли токен
+			if timeNow.After(expirationTime) {
 				log.Print("accessToken timed out")
-				http.Error(w, "AccessToken timed out", http.StatusForbidden)
+				http.Error(w, "AccessToken timed out", http.StatusUnauthorized)
 				return
 			}
 			ctx = context.WithValue(ctx, "userId", data.UserId)
 		} else {
-			log.Printf("%v", err)
-			http.Error(w, "AccessToken timed out", http.StatusForbidden)
+			log.Print("invalid token claims %v", err)
+			http.Error(w, "Invalid AccessToken", http.StatusUnauthorized)
 			return
 		}
 
