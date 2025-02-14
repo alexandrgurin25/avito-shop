@@ -26,7 +26,13 @@ func (h *Handle) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.SendCoin(ctx, in.Username, in.Amount)
+	senderUserID := ctx.Value("userId")
+	if senderUserID == nil {
+		http.Error(w, common.ErrUserIdNotFoundContext.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = h.service.SendCoin(ctx, in.Username, senderUserID.(int), in.Amount)
 
 	if errors.Is(err, common.ErrLowBalance) {
 		if err != nil {

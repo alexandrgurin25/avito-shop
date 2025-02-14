@@ -4,7 +4,7 @@ import (
 	"avito-shop/internal/common"
 	"avito-shop/internal/entity"
 	"avito-shop/internal/repository/user_repository"
-	"avito-shop/internal/repository/wallet"
+	"avito-shop/internal/repository/wallet_repository"
 	"context"
 	"log"
 	"os"
@@ -16,16 +16,16 @@ import (
 
 type Service struct {
 	repo   *user_repository.Repository
-	wallet *wallet.Repository
+	wallet *wallet_repository.Repository
 }
 
-func New(repo *user_repository.Repository, wallet *wallet.Repository) *Service {
+func New(repo *user_repository.Repository, wallet *wallet_repository.Repository) *Service {
 	return &Service{repo: repo, wallet: wallet}
 }
 
 func (s *Service) Auth(ctx context.Context, username string, password string) (*entity.Auth, error) {
 	// Поиск пользователя в бд по username
-	userAuth, err := s.repo.FindUserByUsername(ctx, username)
+	userAuth, err := s.repo.FindUserByUsername(ctx, nil, username)
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, err

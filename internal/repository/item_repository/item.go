@@ -1,4 +1,4 @@
-package user_repository
+package item_repository
 
 import (
 	"avito-shop/internal/database"
@@ -19,3 +19,4 @@ func (r *Repository) StartTransaction(ctx context.Context) (pgx.Tx, error) {
 	tx, err := r.db.Begin(ctx)
 	return tx, err
 }
+

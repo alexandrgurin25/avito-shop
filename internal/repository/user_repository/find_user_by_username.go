@@ -6,15 +6,23 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
-//Дописать транзакцию
+func (r *Repository) FindUserByUsername(ctx context.Context, tx pgx.Tx, username string) (*entity.User, error) {
+	var err error
 
-func (r Repository) FindUserByUsername(ctx context.Context, username string) (*entity.User, error) {
 	var id int
 	var amountCoint int
 	var password_hash string
-	err := r.db.QueryRow(
+
+	db := r.db
+	if tx != nil {
+		db = tx
+	}
+
+	err = db.QueryRow(
 		ctx,
 		"SELECT u.id, u.password_hash, w.amount FROM users u JOIN wallet w ON w.user_id = u.id WHERE u.username = $1",
 		username,
@@ -24,7 +32,6 @@ func (r Repository) FindUserByUsername(ctx context.Context, username string) (*e
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		fmt.Println(err)
 		return nil, fmt.Errorf("FindUserByUsername repository error -> %w", err)
 	}
 	user := &entity.User{

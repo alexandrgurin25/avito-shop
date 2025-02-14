@@ -1,4 +1,4 @@
-package wallet
+package wallet_repository
 
 import (
 	"avito-shop/internal/database"

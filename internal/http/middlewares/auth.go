@@ -50,20 +50,17 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		if data, ok := token.Claims.(*tokenData); ok && token.Valid {
-			createdAt := time.Unix(data.CreatedAt, 0)
-			expirationTime := createdAt.Add(common.ExpirationTime) // Добавляем время
-			timeNow := time.Now()
-
-			// Проверяем, истек ли токен
-			if timeNow.After(expirationTime) {
+			expirationTime := time.Unix(data.CreatedAt, 0).Add(common.ExpirationTime).Unix()
+			timeNow := time.Now().Unix()
+			if timeNow > expirationTime {
 				log.Print("accessToken timed out")
 				http.Error(w, "AccessToken timed out", http.StatusUnauthorized)
 				return
 			}
 			ctx = context.WithValue(ctx, "userId", data.UserId)
 		} else {
-			log.Print("invalid token claims %v", err)
-			http.Error(w, "Invalid AccessToken", http.StatusUnauthorized)
+			log.Printf("%v", err)
+			http.Error(w, "AccessToken timed out", http.StatusUnauthorized)
 			return
 		}
 

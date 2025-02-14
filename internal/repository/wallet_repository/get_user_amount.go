@@ -1,4 +1,4 @@
-package wallet
+package wallet_repository
 
 import (
 	"avito-shop/internal/entity"
@@ -26,8 +26,6 @@ func (r *Repository) GetAmountByUserId(ctx context.Context, tx pgx.Tx, userID in
 		ID:     userID,
 		Amount: amount,
 	}
-
-	
 
 	return user, nil
 }

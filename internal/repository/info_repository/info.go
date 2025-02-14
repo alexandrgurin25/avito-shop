@@ -1,4 +1,4 @@
-package user_repository
+package info_repository
 
 import (
 	"avito-shop/internal/database"

@@ -4,10 +4,11 @@ import (
 	"avito-shop/internal/database"
 	"avito-shop/internal/entity"
 	"context"
-	"github.com/joho/godotenv"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"testing"
+
+	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test_Create тест на получение всех данных
