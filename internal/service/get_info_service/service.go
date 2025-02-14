@@ -13,29 +13,28 @@ type Service struct {
 	wallet *wallet_repository.Repository
 }
 
-func New(repo *info_repository.Repository) *Service {
-	return &Service{repo: repo}
+func New(repo *info_repository.Repository, wallet *wallet_repository.Repository) *Service {
+	return &Service{repo: repo, wallet: wallet}
 }
 
-//Создать таблицу coinHistory
-// id | fromUser_id | toUser_id | amount
-
-func (s Service) GetInfoByUser(ctx context.Context, userID int) (*entity.UserInfo, error) {
-	tx, err := s.repo.StartTransaction(ctx)
+func (s *Service) GetInfoByUser(ctx context.Context, userID int) (*entity.UserInfo, error) {
+	//Получить кол-во денег на балансе
+	user, err := s.wallet.GetAmountByUserId(ctx, nil, userID)
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, err
 	}
 
-	//Получить кол-во денег на балансе
-	user, err := s.wallet.GetAmountByUserId(ctx, tx, userID)
+	invertoris, err := s.repo.GetInvertoryByUserId(ctx, userID)
 	if err != nil {
-		// Если произошла ошибка, откатываем транзакцию
-		if err := tx.Rollback(ctx); err != nil {
-			log.Printf("failed to rollback transaction GetAmountByUserId: %v", err)
-		}
+		log.Printf("%v", err)
 		return nil, err
 	}
 
+	result := &entity.UserInfo{
+		Coins:     user.Amount,
+		Inventory: invertoris,
+	}
 
+	return result, nil
 }

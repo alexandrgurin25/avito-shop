@@ -11,7 +11,14 @@ import (
 
 func (r *Repository) GetAmountByUserId(ctx context.Context, tx pgx.Tx, userID int) (*entity.User, error) {
 	var amount int
-	err := tx.QueryRow(
+
+	db := r.db
+
+	if tx != nil {
+		db = tx
+	}
+
+	err := db.QueryRow(
 		ctx,
 		`SELECT amount FROM wallet WHERE user_id = $1`,
 		userID,

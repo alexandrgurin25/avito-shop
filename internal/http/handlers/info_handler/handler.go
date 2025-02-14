@@ -1,21 +1,35 @@
 package info_handler
 
 import (
+	"avito-shop/internal/common"
+	"avito-shop/internal/service/get_info_service"
 	"encoding/json"
 	"net/http"
 )
 
-func Handle(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+	service *get_info_service.Service
+}
+
+func New(service *get_info_service.Service) *Handler {
+	return &Handler{service: service}
+}
+
+func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userId, ok := ctx.Value("userId").(string)
+	userId := ctx.Value("userId")
 
-
-	
-
-	if !ok {
-		http.Error(w, "", http.StatusUnauthorized)
+	if userId == nil {
+		http.Error(w, common.ErrUserIdNotFoundContext.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(userId)
+	user, err := h.service.GetInfoByUser(ctx, userId.(int))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
 }
