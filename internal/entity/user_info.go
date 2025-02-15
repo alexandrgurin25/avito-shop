@@ -22,6 +22,6 @@ type SentCoinTransaction struct {
 }
 
 type CoinHistory struct {
-	Received []SentCoinTransaction     `json:"received"`
-	Sent     []ReceivedCoinTransaction `json:"sent"`
+	Received []ReceivedCoinTransaction `json:"received"`
+	Sent     []SentCoinTransaction     `json:"sent"`
 }

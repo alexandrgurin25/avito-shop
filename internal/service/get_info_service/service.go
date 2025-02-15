@@ -31,9 +31,24 @@ func (s *Service) GetInfoByUser(ctx context.Context, userID int) (*entity.UserIn
 		return nil, err
 	}
 
+	receivedCoin, err := s.repo.GetRecevedCoin(ctx, userID)
+	if err != nil {
+		log.Printf("%v", err)
+		return nil, err
+	}	
+
+	sentCoin, err := s.repo.GetInfoSendCoin(ctx, userID)
+
+	coinHistory :=  entity.CoinHistory{
+		Received: receivedCoin,
+		Sent: sentCoin,
+	}
+
+
 	result := &entity.UserInfo{
 		Coins:     user.Amount,
 		Inventory: invertoris,
+		CoinHistory: coinHistory,
 	}
 
 	return result, nil
