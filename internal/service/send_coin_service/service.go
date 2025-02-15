@@ -2,6 +2,7 @@ package send_coin_service
 
 import (
 	"avito-shop/internal/common"
+	"avito-shop/internal/repository/coin_hisory_repository"
 	"avito-shop/internal/repository/user_repository"
 	"avito-shop/internal/repository/wallet_repository"
 	"context"
@@ -11,6 +12,7 @@ import (
 type Service struct {
 	w *wallet_repository.Repository
 	r *user_repository.Repository
+	c *coin_hisory_repository.Repository
 }
 
 func New(w *wallet_repository.Repository, r *user_repository.Repository) *Service {
@@ -70,7 +72,14 @@ func (s *Service) SendCoin(ctx context.Context, usernameRecipient string, sender
 		return err
 	}
 
-	//Вставить таблицу coinHistory (тоже транзакция)
+	err = s.c.AddCoinHisory(ctx, tx, recipient.ID, sender.ID, amount)
+	if err != nil {
+		// Если произошла ошибка, откатываем транзакцию
+		if err := tx.Rollback(ctx); err != nil {
+			log.Printf("failed to rollback transaction: %v", err)
+		}
+		return err
+	}
 
 	// Если все прошло успешно, фиксируем транзакцию
 	if err := tx.Commit(ctx); err != nil {
