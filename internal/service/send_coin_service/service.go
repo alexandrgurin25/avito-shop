@@ -15,8 +15,8 @@ type Service struct {
 	c *coin_hisory_repository.Repository
 }
 
-func New(w *wallet_repository.Repository, r *user_repository.Repository) *Service {
-	return &Service{w: w, r: r}
+func New(w *wallet_repository.Repository, r *user_repository.Repository, c *coin_hisory_repository.Repository) *Service {
+	return &Service{w: w, r: r, c: c}
 }
 
 func (s *Service) SendCoin(ctx context.Context, usernameRecipient string, senderUserID int, amount int) error {
@@ -72,7 +72,7 @@ func (s *Service) SendCoin(ctx context.Context, usernameRecipient string, sender
 		return err
 	}
 
-	err = s.c.AddCoinHisory(ctx, tx, recipient.ID, sender.ID, amount)
+	err = s.c.AddCoinHisory(ctx, tx, sender.ID, recipient.ID, amount)
 	if err != nil {
 		// Если произошла ошибка, откатываем транзакцию
 		if err := tx.Rollback(ctx); err != nil {

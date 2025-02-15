@@ -7,6 +7,7 @@ import (
 	"avito-shop/internal/http/handlers/info_handler"
 	"avito-shop/internal/http/handlers/send_coin_handler"
 	"avito-shop/internal/http/middlewares"
+	"avito-shop/internal/repository/coin_hisory_repository"
 	"avito-shop/internal/repository/info_repository"
 	"avito-shop/internal/repository/item_repository"
 	"avito-shop/internal/repository/user_repository"
@@ -39,9 +40,10 @@ func (a *app) Start() {
 	walletRepository := wallet_repository.New(db)
 	userRepository := user_repository.New(db)
 	infoRepository := info_repository.New(db)
+	coinRepository := coin_hisory_repository.New(db)
 
 	authService := auth_service.New(userRepository, walletRepository)
-	sendService := send_coin_service.New(walletRepository, userRepository)
+	sendService := send_coin_service.New(walletRepository, userRepository, coinRepository)
 	infoService := get_info_service.New(infoRepository, walletRepository)
 
 	authHendler := auth_handler.New(authService)

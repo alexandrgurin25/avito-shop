@@ -23,11 +23,11 @@ func (r *Repository) StartTransaction(ctx context.Context) (pgx.Tx, error) {
 }
 
 func (r *Repository) AddCoinHisory(ctx context.Context, tx pgx.Tx, fromUserId int, toUserID int, amount int) error {
-	_, err := r.db.Exec(
+	_, err := tx.Exec(
 		ctx,
-		`INSERT INTO coinHistory(fromuser_id int, touser_id int, amount int) VALUES ($1, $2, $3)`,
-		toUserID,
+		`INSERT INTO coinhistory(fromuser_id, touser_id, amount) VALUES ($1, $2, $3)`,
 		fromUserId,
+		toUserID,
 		amount,
 	)
 
