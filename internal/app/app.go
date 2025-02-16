@@ -18,6 +18,7 @@ import (
 	"avito-shop/internal/service/send_coin_service"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -64,5 +65,13 @@ func (a *app) Start() {
 	router.With(middlewares.AuthMiddleware).Post("/api/sendCoin", sendHendler.Handle)
 	router.With(middlewares.AuthMiddleware).Get("/api/info", infoHendler.Handle)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

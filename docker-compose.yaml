@@ -1,28 +1,31 @@
 
+version: '3.8'
+
 services:
+  postgresql:
+    image: postgres:17
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 102104
+      POSTGRES_DB: shop
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
   avito-shop:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_HOST: ${DB_HOST}  
-      DB_PORT: ${DB_PORT}        
+      AUTH_SECRET_KEY: avito
+      DB_USER: postgres
+      DB_PASSWORD: 102104
+      DB_NAME: shop
+      DB_HOST: postgresql
+      DB_PORT: 5432  
+      WAIT_HOSTS: postgresql:5432
     ports:
-      - "8080:8080"       
+      - "8080:8080"
     depends_on:
-      - postgresql         
-
-  postgresql:
-    image: postgres:17
-    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    restart: unless-stopped
-    ports:
-      - "${DB_PORT}:${DB_PORT}"
+      - postgresql

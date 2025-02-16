@@ -78,7 +78,6 @@ func TestAuth_ErrorPassword(t *testing.T) {
 	mockAuthRepo.EXPECT().FindUserByUsername(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(user, nil)
 	mockAuthRepo.EXPECT().CheckPasswordHash(user.PasswordHash, gomock.Any()).AnyTimes().Return(false) // Неверный пароль
 
-	err = nil
 	// Тестирование ошибки при неверном пароле
 	auth, err := service.Auth(context.Background(), username, "wrongpassword")
 	assert.Error(t, err)

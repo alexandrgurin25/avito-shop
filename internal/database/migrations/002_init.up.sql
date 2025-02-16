@@ -1,5 +1,3 @@
-TRUNCATE TABLE item RESTART IDENTITY;
-
 INSERT INTO item (name, amount) VALUES
 ('t-shirt', 80),
 ('cup', 20),

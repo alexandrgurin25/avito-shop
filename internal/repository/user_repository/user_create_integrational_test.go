@@ -22,7 +22,11 @@ func Test_Create(t *testing.T) {
 	db, err := database.New(database.WithConn())
 	// проверяем, что соединение было создано без ошибки
 	assert.NoError(t, err)
-	defer db.Close(ctx)
+	defer func() {
+		if err := db.Close(ctx); err != nil {
+			t.Errorf("Ошибка при закрытии базы данных: %v", err)
+		}
+	}()
 
 	// каждый тест запускаем отдельной транзакцией в БД
 	tx, err := db.Begin(ctx)

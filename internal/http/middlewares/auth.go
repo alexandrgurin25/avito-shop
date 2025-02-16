@@ -10,20 +10,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
 
 type tokenData struct {
 	jwt.RegisteredClaims       // техническое поле для пирсинга
 	UserId               int   `json:"id"`
 	CreatedAt            int64 `json:"iat"`
-}
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-		panic(err)
-	}
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {

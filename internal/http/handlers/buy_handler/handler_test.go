@@ -7,27 +7,33 @@ import (
 	"avito-shop/internal/repository/wallet_repository"
 	"avito-shop/internal/service/buy_service"
 	"context"
-	"log"
+	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	if err := godotenv.Load("../../../../.env"); err != nil {
-		log.Print("No .env file found")
-		panic(err)
-	}
-}
-
 func Test_Handler(t *testing.T) {
+	err := os.Setenv("DB_HOST", "127.0.0.1")
+	assert.NoError(t, err)
+	err = os.Setenv("DB_PORT", "5432")
+	assert.NoError(t, err)
+	err = os.Setenv("DB_USER", "postgres")
+	assert.NoError(t, err)
+	err = os.Setenv("DB_PASSWORD", "102104")
+	assert.NoError(t, err)
+	err = os.Setenv("DB_NAME", "shop")
+	assert.NoError(t, err)
 	ctx := context.Background()
 	db, err := database.New(database.WithConn())
 	if err != nil {
 		t.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer db.Close(ctx)
+	defer func() {
+        if err := db.Close(ctx); err != nil {
+            t.Errorf("Ошибка при закрытии базы данных: %v", err)
+        }
+    }()
 
 	user := entity.User{
 		ID:           50,
@@ -58,6 +64,8 @@ func Test_Handler(t *testing.T) {
 		assert.NoError(t, err)
 		_, err = db.Exec(ctx, `DELETE FROM users WHERE id = $1`, user.ID)
 		assert.NoError(t, err)
+		_, err = db.Exec(ctx, `DELETE FROM orders WHERE user_id = $1`, user.ID)
+		assert.NoError(t, err)
 	}()
 
 	walletRepository := wallet_repository.New(db)
@@ -73,5 +81,18 @@ func Test_Handler(t *testing.T) {
 	err = buyService.BuyItem(ctx, user.ID, "umbrella")
 	assert.NoError(t, err)
 
-	//сделать select в бд и проверить что списались деньги и появилась новая запись
+	const itemPrice = 200
+
+	// Проверяем, что сумма на кошельке уменьшилась
+	var currentAmount int
+	err = db.QueryRow(ctx, `SELECT amount FROM wallet WHERE user_id = $1`, user.ID).Scan(&currentAmount)
+	assert.NoError(t, err)
+	assert.Equal(t, user.Amount-itemPrice, currentAmount, "Wallet amount should be decreased by the item price")
+
+	// Проверяем, что новая запись о покупке появилась
+	var purchaseCount int
+	err = db.QueryRow(ctx, `SELECT COUNT(*) FROM orders WHERE user_id = $1 AND item_id = $2`, user.ID, 7).Scan(&purchaseCount)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, purchaseCount, "There should be one purchase record for the item")
+
 }
