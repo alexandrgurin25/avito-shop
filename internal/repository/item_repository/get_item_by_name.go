@@ -13,7 +13,14 @@ import (
 
 func (r *Repository) GetItemByName(ctx context.Context, tx pgx.Tx, nameItem string) (*entity.Item, error) {
 	var amount, id int
-	err := tx.QueryRow(
+
+	db := r.db
+
+	if tx != nil {
+		db = tx
+	}
+
+	err := db.QueryRow(
 		ctx,
 		`SELECT id, amount FROM item WHERE name = $1`,
 		nameItem,
