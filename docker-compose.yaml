@@ -1,0 +1,28 @@
+
+services:
+  avito-shop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}  
+      DB_PORT: ${DB_PORT}        
+    ports:
+      - "8080:8080"       
+    depends_on:
+      - postgresql         
+
+  postgresql:
+    image: postgres:17
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT}:${DB_PORT}"

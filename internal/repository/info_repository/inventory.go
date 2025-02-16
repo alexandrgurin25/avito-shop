@@ -10,7 +10,8 @@ import (
 func (repo *Repository) GetInvertoryByUserId(ctx context.Context, userID int) ([]entity.InventoryItem, error) {
 	rows, err := repo.db.Query(
 		ctx,
-		`SELECT  i.name, COUNT(i.name) FROM orders o JOIN item i ON i.id = o.item_id WHERE o.user_id  = $1 group by i.name `,
+		`select name, count from item join (
+		 select o.item_id , count(o.item_id) as count from orders o where o.user_id = $1 group by o.item_id) od on item.id = od.item_id`,
 		userID,
 	)
 

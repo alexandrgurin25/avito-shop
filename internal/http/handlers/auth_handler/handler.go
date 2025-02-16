@@ -45,5 +45,9 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(AuthDtoOut)
+	err = json.NewEncoder(w).Encode(AuthDtoOut)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

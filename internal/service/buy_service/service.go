@@ -2,18 +2,34 @@ package buy_service
 
 import (
 	"avito-shop/internal/common"
-	"avito-shop/internal/repository/item_repository"
-	"avito-shop/internal/repository/wallet_repository"
+	"avito-shop/internal/entity"
 	"context"
 	"log"
+
+	"github.com/jackc/pgx/v5"
 )
 
-type Service struct {
-	repo   *item_repository.Repository
-	wallet *wallet_repository.Repository
+//go:generate mockgen -destination=mocks/service.go -package=mocks -source=service.go
+
+type itemRepository interface {
+	StartTransaction(ctx context.Context) (pgx.Tx, error)
+	AddItemByUserId(ctx context.Context, tx pgx.Tx, userID int, item int) error
+	GetItemByName(ctx context.Context, tx pgx.Tx, nameItem string) (*entity.Item, error)
 }
 
-func New(repo *item_repository.Repository, wallet *wallet_repository.Repository) *Service {
+type walletRepository interface {
+	StartTransaction(ctx context.Context) (pgx.Tx, error)
+	GetAmountByUserId(ctx context.Context, tx pgx.Tx, userID int) (*entity.User, error)
+	SetAmount(ctx context.Context, tx pgx.Tx, usesId int, amount int) error
+	CreateWallet(ctx context.Context, userID int) error
+}
+
+type Service struct {
+	repo   itemRepository
+	wallet walletRepository
+}
+
+func New(repo itemRepository, wallet walletRepository) *Service {
 	return &Service{repo: repo, wallet: wallet}
 }
 

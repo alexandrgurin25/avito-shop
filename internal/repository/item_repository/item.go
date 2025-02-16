@@ -19,4 +19,3 @@ func (r *Repository) StartTransaction(ctx context.Context) (pgx.Tx, error) {
 	tx, err := r.db.Begin(ctx)
 	return tx, err
 }
-

@@ -3,23 +3,33 @@ package auth_service
 import (
 	"avito-shop/internal/common"
 	"avito-shop/internal/entity"
-	"avito-shop/internal/repository/user_repository"
-	"avito-shop/internal/repository/wallet_repository"
 	"context"
 	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Service struct {
-	repo   *user_repository.Repository
-	wallet *wallet_repository.Repository
+type authRepository interface {
+	FindUserByUsername(ctx context.Context, tx pgx.Tx, username string) (*entity.User, error)
+	CreateUser(ctx context.Context, username string, passwordHash string) (*entity.User, error)
 }
 
-func New(repo *user_repository.Repository, wallet *wallet_repository.Repository) *Service {
+type walletRepository interface {
+	CreateWallet(ctx context.Context, userID int) error
+}
+
+//go:generate mockgen -destination=mocks/service.go -package=mocks -source=service.go
+
+type Service struct {
+	repo   authRepository
+	wallet walletRepository
+}
+
+func New(repo authRepository, wallet walletRepository) *Service {
 	return &Service{repo: repo, wallet: wallet}
 }
 
@@ -35,7 +45,7 @@ func (s *Service) Auth(ctx context.Context, username string, password string) (*
 	// Проверка существования пользователя
 	if userAuth != nil {
 		// Если есть -> проверка пароля
-		if CheckPasswordHash(password, userAuth.PasswordHash) {
+		if s.CheckPasswordHash(password, userAuth.PasswordHash) {
 			jwt.AccessToken, err = createToken(userAuth)
 			if err != nil {
 				return nil, err
@@ -99,7 +109,7 @@ func createToken(user *entity.User) (string, error) {
 	return accessToken, nil
 }
 
-func CheckPasswordHash(password, hash string) bool {
+func (s *Service) CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }

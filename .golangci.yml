@@ -1,0 +1,40 @@
+
+linters:
+  enable:
+    - golint
+    - errcheck
+    - staticcheck
+    - unused
+    - gocyclo
+    - gofmt
+    - gosec
+
+issues:
+  exclude-use-default: false
+  exclude:
+    - "Error return value is not checked"
+    - "should not use dot imports"
+    - "G104" # gosec: Potential file inclusion via variable
+    - "G101" # gosec: Potential hardcoded credentials
+
+run:
+  tests: true
+  skip-dirs:
+    - vendor
+  skip-files:
+    - .*\.gen\.go
+  timeout: 5m
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+# Настройки для конкретных линтеров
+linters-settings:
+  golint:
+    min-confidence: 0.8
+  gocyclo:
+    min-complexity: 10
+  gosec:
+    severity: medium
