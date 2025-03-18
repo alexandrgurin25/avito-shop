@@ -14,12 +14,12 @@ func (r *Repository) GetInfoSendCoin(ctx context.Context, userID int) ([]entity.
 		userID,
 	)
 
+	defer rows.Close()
+
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, fmt.Errorf("repository GetInfoSendCoin error %v", err)
 	}
-
-	defer rows.Close()
 
 	sentCoins := make([]entity.SentCoinTransaction, 0)
 

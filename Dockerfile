@@ -1,18 +1,20 @@
 FROM golang:1.23.5
 
+# Устанавливаем рабочую директорию
 WORKDIR /avito-shop
 
+# Копируем файлы зависимостей
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем весь проект
 COPY . .
 
-COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /wait
+# Переходим в директорию с main.go и собираем приложение
+RUN cd cmd/service && go build -o avito-shop .
 
-WORKDIR /avito-shop/cmd/service
-
-RUN go build -o avito-shop .
-
+# Открываем порт
 EXPOSE 8080
 
-CMD /wait && ./avito-shop
+# Запускаем приложение
+CMD ["./cmd/service/avito-shop"]

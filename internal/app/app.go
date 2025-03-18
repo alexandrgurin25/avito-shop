@@ -1,7 +1,7 @@
 package app
 
 import (
-	"avito-shop/internal/database"
+	"avito-shop/internal/config"
 	"avito-shop/internal/http/handlers/auth_handler"
 	"avito-shop/internal/http/handlers/buy_handler"
 	"avito-shop/internal/http/handlers/info_handler"
@@ -16,12 +16,14 @@ import (
 	"avito-shop/internal/service/buy_service"
 	"avito-shop/internal/service/get_info_service"
 	"avito-shop/internal/service/send_coin_service"
-	"log"
+	postgres "avito-shop/pkg/postgtres"
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 )
 
 type app struct {
@@ -32,11 +34,23 @@ func New() *app {
 }
 
 func (a *app) Start() {
-	db, err := database.New(database.WithConn())
+	logger, _ := zap.NewProduction()
+
+	ctx := context.Background()
+
+	cfg, err := config.New()
 	if err != nil {
-		// Ошибка
+		logger.Fatal("unable to load config", zap.Error(err))
 		return
 	}
+
+	db, err := postgres.New(ctx, cfg)
+	if err != nil {
+		logger.Fatal("unable to connect db", zap.Error(err))
+		return
+	}
+
+	logger.Info("Succesful start!")
 
 	walletRepository := wallet_repository.New(db)
 	userRepository := user_repository.New(db)
@@ -73,5 +87,5 @@ func (a *app) Start() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	log.Fatal(srv.ListenAndServe())
+	logger.Fatal("Ошибка при запуске сервера", zap.Error(srv.ListenAndServe()))
 }

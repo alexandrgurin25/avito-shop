@@ -30,10 +30,10 @@ func Test_Handler(t *testing.T) {
 		t.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer func() {
-        if err := db.Close(ctx); err != nil {
-            t.Errorf("Ошибка при закрытии базы данных: %v", err)
-        }
-    }()
+		if err := db.Close(ctx); err != nil {
+			t.Errorf("Ошибка при закрытии базы данных: %v", err)
+		}
+	}()
 
 	user := entity.User{
 		ID:           50,

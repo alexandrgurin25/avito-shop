@@ -40,7 +40,7 @@ func (s *Service) Auth(ctx context.Context, username string, password string) (*
 		log.Printf("%v", err)
 		return nil, err
 	}
-
+	
 	var jwt entity.Auth
 	// Проверка существования пользователя
 	if userAuth != nil {
