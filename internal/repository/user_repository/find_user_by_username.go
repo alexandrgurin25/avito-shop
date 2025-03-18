@@ -32,7 +32,7 @@ func (r *Repository) FindUserByUsername(ctx context.Context, tx pgx.Tx, username
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("FindUserByUsername repository error -> %w", err)
+		return nil, fmt.Errorf("FindUserByUsername repository error -> %v", err)
 	}
 	user := &entity.User{
 		ID:           id,

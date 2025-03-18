@@ -15,12 +15,12 @@ func (repo *Repository) GetInvertoryByUserId(ctx context.Context, userID int) ([
 		userID,
 	)
 
+	defer rows.Close()
+
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, fmt.Errorf("repository GetInvertoryByUserId error %v", err)
 	}
-
-	defer rows.Close()
 
 	inventoris := make([]entity.InventoryItem, 0)
 

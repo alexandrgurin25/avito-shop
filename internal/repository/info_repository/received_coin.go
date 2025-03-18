@@ -15,12 +15,12 @@ func (repo *Repository) GetRecevedCoin(ctx context.Context, userID int) ([]entit
 		userID,
 	)
 
+	defer rows.Close()
+
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, fmt.Errorf("repository GetRecevedCoin error %v", err)
 	}
-
-	defer rows.Close()
 
 	receivedCoins := make([]entity.ReceivedCoinTransaction, 0)
 
