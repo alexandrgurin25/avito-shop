@@ -17,12 +17,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 102104
-      POSTGRES_DB: shopTest
+      POSTGRES_DB: TestShop
     restart: unless-stopped
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    
     ports:
-      - "5433:5433"
+      - "5433:5432"
 
   avito-shop:
     build:
