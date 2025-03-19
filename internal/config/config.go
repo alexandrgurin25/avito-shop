@@ -5,20 +5,37 @@ import (
 )
 
 type Config struct {
-	Host     string `env:"POSTGRES_HOST"`
-	Port     uint16 `env:"POSTGRES_PORT"`
-	Username string `env:"POSTGRES_USER"`
-	Password string `env:"POSTGRES_PASSWORD"`
-	Database string `env:"POSTGRES_DB"`
+	Host     string `yaml:"POSTGRES_HOST" env:"POSTGRES_HOST"`
+	Port     uint16 `yaml:"POSTGRES_PORT" env:"POSTGRES_PORT"`
+	Username string `yaml:"POSTGRES_USER" env:"POSTGRES_USER"`
+	Password string `yaml:"POSTGRES_PASSWORD" env:"POSTGRES_PASSWORD"`
+	Database string `yaml:"POSTGRES_DB" env:"POSTGRES_DB"`
 
-	MinConns int32 `env:"POSTGRES_MIN_CONN"`
-	MaxConns int32 `env:"POSTGRES_MAX_CONN"`
+	MinConns int32 `yaml:"POSTGRES_MIN_CONN" env:"POSTGRES_MIN_CONN"`
+	MaxConns int32 `yaml:"POSTGRES_MAX_CONN" env:"POSTGRES_MAX_CONN"`
 }
 
 func New() (*Config, error) {
 	var cfg Config
-	if err := cleanenv.ReadEnv(&cfg); err != nil {
-		return nil, err
+
+	if err := cleanenv.ReadConfig("./config/.env", &cfg); err != nil {
+		if err = cleanenv.ReadEnv(&cfg); err != nil {
+			return nil, err
+		}
 	}
+
+	return &cfg, nil
+}
+
+func NewTest() (*Config, error) {
+	var cfg Config
+
+	if err := cleanenv.ReadConfig("C:/Users/alexa/GolandProjects/avito-shop/config/.yml", &cfg); err != nil {
+		return nil, err
+		// if err = cleanenv.ReadEnv(&cfg); err != nil {
+		// 	return nil, err
+		// }
+	}
+
 	return &cfg, nil
 }

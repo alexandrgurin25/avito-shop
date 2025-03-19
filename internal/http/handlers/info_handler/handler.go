@@ -3,8 +3,11 @@ package info_handler
 import (
 	"avito-shop/internal/common"
 	"avito-shop/internal/service/get_info_service"
+	"avito-shop/pkg/logger"
 	"encoding/json"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -33,6 +36,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewEncoder(w).Encode(user)
 	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Error(ctx, "error encoding JSON", zap.Error(err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

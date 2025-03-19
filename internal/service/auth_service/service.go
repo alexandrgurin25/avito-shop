@@ -3,13 +3,15 @@ package auth_service
 import (
 	"avito-shop/internal/common"
 	"avito-shop/internal/entity"
+	"avito-shop/pkg/logger"
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -37,10 +39,9 @@ func (s *Service) Auth(ctx context.Context, username string, password string) (*
 	// Поиск пользователя в бд по username
 	userAuth, err := s.repo.FindUserByUsername(ctx, nil, username)
 	if err != nil {
-		log.Printf("%v", err)
-		return nil, err
+		return nil, err // Не нужно логгировать "user not found", тк его нужно создать
 	}
-	
+
 	var jwt entity.Auth
 	// Проверка существования пользователя
 	if userAuth != nil {
@@ -48,6 +49,7 @@ func (s *Service) Auth(ctx context.Context, username string, password string) (*
 		if s.CheckPasswordHash(password, userAuth.PasswordHash) {
 			jwt.AccessToken, err = createToken(userAuth)
 			if err != nil {
+				logger.GetLoggerFromCtx(ctx).Error(ctx, "Falied to createToken", zap.Error(err))
 				return nil, err
 			}
 
@@ -60,25 +62,27 @@ func (s *Service) Auth(ctx context.Context, username string, password string) (*
 		// Если нет пользователя -> создаем пользователя
 		password_hash, err := HashPassword(password)
 		if err != nil {
-			log.Printf("HashPassword could not generare password_hash %v", err)
+			logger.GetLoggerFromCtx(ctx).Error(ctx, "HashPassword could not generare password_hash", zap.Error(err))
 			return nil, err
 		}
 
 		userAuth, err := s.repo.CreateUser(ctx, username, password_hash)
 		if err != nil {
+			logger.GetLoggerFromCtx(ctx).Error(ctx, "Falied to CreateUser", zap.Error(err))
 			return nil, err
 		}
 
 		// Создаем jwt по username(user'a)
 		jwt.AccessToken, err = createToken(userAuth)
 		if err != nil {
+			logger.GetLoggerFromCtx(ctx).Error(ctx, "Falied to createToken", zap.Error(err))
 			return nil, err
 		}
 
 		// Cоздание кошелька
 		err = s.wallet.CreateWallet(ctx, userAuth.ID)
 		if err != nil {
-			log.Printf("Здесь ошибка%v", err)
+			logger.GetLoggerFromCtx(ctx).Error(ctx, "Falied to CreateWallet", zap.Error(err))
 			return nil, err
 		}
 
@@ -102,8 +106,7 @@ func createToken(user *entity.User) (string, error) {
 	accessToken, err := t.SignedString([]byte(secretKey))
 
 	if err != nil {
-		log.Printf("JWT token could not be signed %v", err)
-		return "", err
+		return "", fmt.Errorf("JWT token could not be signed %v", err)
 	}
 
 	return accessToken, nil
