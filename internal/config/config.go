@@ -30,11 +30,10 @@ func New() (*Config, error) {
 func NewTest() (*Config, error) {
 	var cfg Config
 
-	if err := cleanenv.ReadConfig("C:/Users/alexa/GolandProjects/avito-shop/config/.yml", &cfg); err != nil {
-		return nil, err
-		// if err = cleanenv.ReadEnv(&cfg); err != nil {
-		// 	return nil, err
-		// }
+	if err := cleanenv.ReadConfig("../../../config/test.env", &cfg); err != nil {
+		if err = cleanenv.ReadEnv(&cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	return &cfg, nil

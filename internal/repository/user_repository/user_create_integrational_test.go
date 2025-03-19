@@ -23,7 +23,7 @@ func Test_Create(t *testing.T) {
 	}
 
 	// создаем соединение к тестовой бд
-	db, err := postgres.New(ctx, cfg)
+	db, err := postgres.NewTest(ctx, cfg)
 
 	// проверяем, что соединение было создано без ошибки
 	if !assert.NoError(t, err) {
