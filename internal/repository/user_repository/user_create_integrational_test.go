@@ -1,32 +1,34 @@
 package user_repository
 
 import (
+	"avito-shop/internal/config"
 	"avito-shop/internal/database"
 	"avito-shop/internal/entity"
+	postgres "avito-shop/pkg/postgtres"
 	"context"
-	"path/filepath"
 	"testing"
 
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
 // Test_Create тест на получение всех данных
 func Test_Create(t *testing.T) {
-	err := godotenv.Load(filepath.Join("../../../", ".env"))
-
-	assert.NoError(t, err)
 	ctx := context.Background()
 
-	// создаем соединение к бд для теста
-	db, err := database.New(database.WithConn())
+	// подключаем конфиг для тестовой базы данных
+	cfg, err := config.NewTest()
+
+	if !assert.NoError(t, err) {
+		t.Errorf("Ошибка чтения конфига: %v", err)
+	}
+
+	// создаем соединение к тестовой бд
+	db, err := postgres.New(ctx, cfg)
+
 	// проверяем, что соединение было создано без ошибки
-	assert.NoError(t, err)
-	defer func() {
-		if err := db.Close(ctx); err != nil {
-			t.Errorf("Ошибка при закрытии базы данных: %v", err)
-		}
-	}()
+	if !assert.NoError(t, err) {
+		t.Errorf("Ошибка cоздания соединения с бд: %v", err)
+	}
 
 	// каждый тест запускаем отдельной транзакцией в БД
 	tx, err := db.Begin(ctx)
